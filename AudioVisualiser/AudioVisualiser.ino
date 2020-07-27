@@ -111,6 +111,17 @@ void myDisplay() { // easiest way around member function pointer
   gfx.displayRow(); // the update function for my particular display, this will probably be different for you
 }
 
+// function to find peak FFT value in a bin range
+// (this should be slightly more robust if you change the number of FFT bars)
+float peakFFT(AudioAnalyzeFFT1024 *fft, int l, int u) {
+  float t, t0 = 0;
+  for (int i = l; i < u; i++) {
+    t = fft->read(i);
+    if (t > t0) t0 = t;
+  }
+  return t0;
+}
+
 // declare horizontal peak and rms bars
 Bar peakLbar(HORZ_BAR_LEN, gfx.getBrightnessLevels()/4); // left
 Bar peakRbar(HORZ_BAR_LEN, gfx.getBrightnessLevels()/4); // right
@@ -220,23 +231,26 @@ void loop() {
       peakRbar.setValue(ui16peakR * scalepeak);
       rmsLbar.setValue(ui16rmsL * scalepeak);
       rmsRbar.setValue(ui16rmsR * scalepeak);
-
-      meanpeakbar2.setValue(meanpeak * scalepeak);
+      
       meanpeakbar.setValue(uint16_t(meanpeak));
+      meanpeakbar2.setValue(meanpeak * scalepeak);
       meanrmsbar.setValue(meanrms * scalepeak);
 
       // read and scale FFT readings
       uint16_t bat = 0, batnew;
+      float Lval, Rval;
       for (uint8_t i = 0; i < NUM_FFT_BARS; i++) {
         batnew = bat + bucketsplus[i];
-        if (scalepeak <= 1) {
-          fftLbars[i]->setValue(log10((9 * fftL.read(bat, batnew - 1) + 1) - (i*0.002)) * 65354.0 * scalepeak);
-          fftRbars[i]->setValue(log10((9 * fftR.read(bat, batnew - 1) + 1) - (i*0.002)) * 65354.0 * scalepeak);
+        Lval = peakFFT(&fftL, bat, batnew - 1);
+        Rval = peakFFT(&fftR, bat, batnew - 1);
+        if (Lval < 0.000123) { // this magic value appears to be the precision in the FFT
+          Lval = 0;
         }
-        else {
-          fftLbars[i]->setValue(log10((9 * fftL.read(bat, batnew - 1) * scalepeak + 1) - (i*0.002*scalepeak)) * 65354.0 * 2);
-          fftRbars[i]->setValue(log10((9 * fftR.read(bat, batnew - 1) * scalepeak + 1) - (i*0.002*scalepeak)) * 65354.0 * 2);          
+        if (Rval < 0.000123) {
+          Rval = 0;
         }
+        fftLbars[i]->setValue((log10( Lval * 90 * scalepeak + 1)) * 65354.0);
+        fftRbars[i]->setValue((log10( Rval * 90 * scalepeak + 1)) * 65354.0);
         bat = batnew;
       }
 
