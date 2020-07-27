@@ -88,6 +88,10 @@ class Bar {
       *remainder = round((newlen - *len) * (brightness - BG_BRIGHT)) + BG_BRIGHT;
     }
 
+    uint8_t getBrightness() {
+      return brightness;
+    }
+
   private:
     uint8_t numLeds;
     uint16_t oldvalue;
@@ -149,10 +153,10 @@ void setup() {
   }
 
   // initialise arrays
-  memset(ui16peakL_log, 0, ui16peakL_log*sizeof(uint16_t));
-  memset(ui16peakR_log, 0, ui16peakR_log*sizeof(uint16_t));
-  memset(ui16rmsL_log, 0, ui16rmsL_log*sizeof(uint16_t));
-  memset(ui16rmsR_log, 0, ui16rmsR_log*sizeof(uint16_t));
+  memset(ui16peakL_log, 0, AVERAGE_FOR*sizeof(uint16_t));
+  memset(ui16peakR_log, 0, AVERAGE_FOR*sizeof(uint16_t));
+  memset(ui16rmsL_log, 0, AVERAGE_FOR*sizeof(uint16_t));
+  memset(ui16rmsR_log, 0, AVERAGE_FOR*sizeof(uint16_t));
 
   // ~12 for each FFT and 6 for stereo peak & rms (this is just a guess though)
   AudioMemory(30);
