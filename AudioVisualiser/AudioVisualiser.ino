@@ -126,8 +126,9 @@ Bar* horizontalBars[] = {&peakLbar, &peakRbar, &rmsLbar, &rmsRbar, &meanpeakbar,
 // number of FFT bars, this should match this length of bucketsplus
 #define NUM_FFT_BARS 10
 // which fft bins to group (this is a differential)
-// formula: round(logspace(0, log10(15), 10))*4
-uint8_t bucketsplus[] = {4, 4, 8, 8, 12, 20, 24, 32, 44, 60};
+// do a cumulative sum, then multiply by 1024 / 44100 to get frequencies
+// these bins should be around 40, 170, 300, 430, 600, 950, 1600, 2900, 5200, and 8200 Hz
+uint8_t bucketsplus[] = {2, 2, 2, 2, 4, 10, 20, 40, 60, 80};
 // declare vertical bars for FFT
 Bar* fftLbars[NUM_FFT_BARS];
 Bar* fftRbars[NUM_FFT_BARS];
